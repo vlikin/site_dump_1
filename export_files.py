@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'viktor'
 
 from lib import Exporter
@@ -8,3 +9,4 @@ project_path = '/var/www/shelepen/drupal/sites/default/files'
 exporter = Exporter('root', '', 'shelepen', project_path, data_path)
 exporter.prepare_files()
 exporter.prepare_articles()
+exporter.prepare_pages()

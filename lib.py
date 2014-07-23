@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'viktor'
 
 from sqlalchemy import create_engine
@@ -6,9 +7,11 @@ from tables import Node, File
 import os
 import shutil
 import json
+import pdb
 
 class Exporter:
     def __init__(self, db_user, db_passwd, db, project_path, data_path):
+        self.langcode_lists = ('en', 'uk', 'ru')
         self.db_user = db_user
         self.db_passwd = db_passwd
         self.db = db
@@ -18,7 +21,7 @@ class Exporter:
         self.file_storage_path = os.path.join(self.data_path, 'files')
 
         # Create an engine.
-        self.engine = create_engine('mysql://%s:%s@localhost/%s' % (db_user, db_passwd, db), echo=False, encoding='latin1')
+        self.engine = create_engine('mysql://%s:%s@localhost/%s?charset=utf8' % (db_user, db_passwd, db), echo=False)
 
         # Create a session fabrica or static container.
         self.Session = sessionmaker(bind=self.engine)
@@ -61,6 +64,34 @@ class Exporter:
                 'uuid': article.uuid,
                 'nid': article.nid
             }
+            for field_data in article.field_data:
+                print field_data.title
+                print ord(field_data.title[0])
+                dict_article[field_data.langcode] = {
+                    'title': field_data.title,
+                    'created': field_data.created,
+                    'changed': field_data.changed,
+                }
             dict_article_list.append(dict_article)
         with open('%s/article_list.json' % self.data_path, 'wb') as fp:
             json.dump(dict_article_list, fp)
+
+    def prepare_pages(self):
+        page_list = self.session.query(Node).filter(Node.type == 'page').all()
+        dict_page_list = []
+        for page in page_list:
+            dict_page = {
+                'uuid': page.uuid,
+                'nid': page.nid
+            }
+            for field_data in page.field_data:
+                print field_data.title
+                print ord(field_data.title[0])
+                dict_page[field_data.langcode] = {
+                    'title': field_data.title,
+                    'created': field_data.created,
+                    'changed': field_data.changed,
+                }
+            dict_page_list.append(dict_page)
+        with open('%s/page_list.json' % self.data_path, 'wb') as fp:
+            json.dump(dict_page_list, fp)
